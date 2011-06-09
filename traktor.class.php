@@ -6,7 +6,9 @@
 	
 	traktor.class.php
 	
-	Traktor playlist handling class
+	Native Instruments Traktor playlist handling class.
+	
+	This software hasn't any connection with Native Instruments.
 	
 	Under development by: Andrea Bergamasco < info at vjandrea dot net >
 	
@@ -35,9 +37,9 @@ class Song {
 	public $minutes;
 	public $seconds;
 	
-	public $duration; // raw, converted on the fly to int or float
+	public $duration; // raw, to be converted on the fly to the required format
 	
-	public $playedPublic; // raw
+	public $playedPublic; // raw (boolean) Appeared only in Traktor 2.
 	
 	public $hideVersion; // set to true if we hide the text in brackets
 	public $replaceText;	// text to replace when we remove the brackets
@@ -90,6 +92,8 @@ class Song {
 			return TRUE;
 		}
 	}
+	
+	
 	/*--
 	
 		Toggles the version hiding routine
@@ -104,6 +108,7 @@ class Song {
 			return FALSE;
 		}
 	}
+	
 	
 	/*--
 	
@@ -150,6 +155,7 @@ class Song {
 		}
 	}
 	
+	
 	/*--
 	
 		Sets $hours, $minutes, $seconds reading and decoding the STARTTIME attribute
@@ -176,6 +182,7 @@ class Song {
 		}
 	}
 	
+	
 	/*--
 		
 		Sets raw $duration reading the DURATION attribute.
@@ -190,6 +197,7 @@ class Song {
 			return FALSE;
 		}
 	}
+	
 	
 	/*--
 	
@@ -223,6 +231,12 @@ class Song {
 		}
 	}
 	
+	/*--
+	
+		Sets the boolean $playedPublic to true.
+		This attribute appeared from version 2 of Traktor.
+	
+	--*/
 	public function setPlayedPublic( $bool ) {
 		$this->log .= "setPlayedPublic('{$bool}')\n";
 		if( isset( $bool ) && !is_null( $bool ) ) {
@@ -234,6 +248,8 @@ class Song {
 			return FALSE;
 		}
 	}
+	
+	
 	/*--
 	
 		Returns the song date/time in different formats, required setting the parameter $format (default "sql")
@@ -291,10 +307,11 @@ class Song {
 		}
 	}
 	
+	
 	/*--
 		
 		If you set $hideVersion to TRUE, it cuts out the text in parentheses, in order to hide the version / remix 
-		(useful if you play a lot of bootlegs or private edits and you don't want to be bugged about it)
+		(useful if you play a lot of bootlegs or private edits and you don't want to be bugged about it or you don't want to disclose these infos. )
 		If you want you can replace all text in parentheses with a custom text, for example (Remix), setting the parameter $replaceText
 	
 	--*/
@@ -303,6 +320,7 @@ class Song {
 			return FALSE;
 		} else {
 			if( $hideVersion == TRUE) {
+				// TODO: fix the regular expression because now if multiple parentheses are found, duplicates of $replaceText will appear in the filename.
 				return preg_replace("/\((.*?)\)/", $replaceText, substr(basename( $string ), 1, -4));
 			} else {
 				return substr(basename( $string ), 1, -4);
