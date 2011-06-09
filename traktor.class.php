@@ -86,7 +86,8 @@ class Song {
 				return FALSE;
 			}
 		} else {
-			return FALSE;
+			$this->log .= "\tParameter not set, we pass everything.\n";
+			return TRUE;
 		}
 	}
 	/*--
@@ -157,13 +158,15 @@ class Song {
 	public function setStartTime( $startTime = "" ) {
 		$this->log .= "setStartTime('{$startTime}')\n";
 		if( isset( $startTime ) && !is_null( $startTime ) && (int)$startTime > 0 ) {
-		
+			$this->log .= "\tStartTime is valid.\n";
+			
 			$this->hours = (int)$startTime / 3600 % 24;
 			$this->minutes = (int)$startTime / 60 % 60;
 			$this->seconds = (int)$startTime % 60;		
 		
 			return TRUE;
 		} else {
+			$this->log .= "\tStartTime is not valid.\n";
 		
 			$this->hours = NULL;
 			$this->minutes = NULL;
@@ -194,6 +197,7 @@ class Song {
 		Options:
 			int
 			float (default)
+			time  minutes:seconds
 	
 	--*/
 	public function getDuration( $format = "float" ) {
@@ -202,6 +206,10 @@ class Song {
 			switch( $format ) {
 				case "int":
 					return (int)ceil( $this->duration );
+				break;
+				
+				case "time":
+					return sprintf("%d:%02d", (int)floor( $this->duration / 60 ), ((int)$this->duration)%60);
 				break;
 				
 				case "float":
@@ -217,9 +225,10 @@ class Song {
 	
 	public function setPlayedPublic( $bool ) {
 		$this->log .= "setPlayedPublic('{$bool}')\n";
-		if( isset( $bool ) && !not_null( $bool ) ) {
+		if( isset( $bool ) && !is_null( $bool ) ) {
 		
 			$this->playedPublic = (bool)$bool;
+			
 			return TRUE;
 		} else {
 			return FALSE;
@@ -313,7 +322,7 @@ class Traktor {
 
 	private $historyPath; // string, this points to Traktor's History folder
 	private $directoryFilter; // string that has to be found in the song path in order to analyze it
-	public $globalSongList; // array that contains a series of Song objects.
+	private $globalSongList; // array that contains a series of Song objects.
 	public $log; // string, debug log
 
 	
@@ -388,16 +397,16 @@ class Traktor {
 										/*-- we save the data collected until now in the Song object. --*/
 										if( isset( $currentSong ) && is_object( $currentSong ) && $currentSong->isComplete() && $currentSong->hasValidPath( $this->directoryFilter ) ) {
 											$songList[] = $currentSong;
-											$this->log .= "\tSong SAVED.\n";
+											$this->log .= "\tSong SAVED:<em>\n";
 											$this->log .= $currentSong->log;
 											unset( $currentSong );
-											$this->log .= "\n\tSong DELETED.\n";
+											$this->log .= "</em>\n\tSong DELETED.\n";
 										} else {
 											if( isset( $currentSong ) && is_object( $currentSong ) ) {
-												$this->log .= "\tSong SKIPPED:\n";
+												$this->log .= "\tSong SKIPPED:<em>\n";
 												$this->log .= $currentSong->log;
 												unset( $currentSong );
-												$this->log .= "\n\tSong DELETED.\n";
+												$this->log .= "</em>\n\tSong DELETED.\n\n";
 											}
 										}
 										/*-- and we create a new Song object --*/
@@ -414,30 +423,25 @@ class Traktor {
 									foreach( $entry->EXTENDEDDATA as $extendedData ) {
 										foreach( $extendedData->attributes() as $name => $value ) {
 											$this->log .= "\t\t{$name}: {$value}\n";
-											if( is_object( $currentSong ) && isset( $currentSong->rawKey ) ) {
+											if( isset( $currentSong ) && is_object( $currentSong ) ) {
 												if( $name == "STARTDATE") {
 													$currentSong->setStartDate( $value );
 												}
 												
 												if( $name == "STARTTIME") {
+													$this->log .= "\tSTARTTIME\n";
 													$currentSong->setStartTime( $value );
 												}
 												
 												if( $name == "DURATION") {
 													$currentSong->setDuration( $value );
+													$this->log .= "\tSong duration: ".$currentSong->getDuration("time")."\n";
 												}
 												
 												if( $name == "PLAYEDPUBLIC") {
 													$currentSong->setPlayedPublic( $value );
 												}
 											
-												if( $currentSong->isComplete() && $currentSong->hasValidPath( $this->directoryFilter ) ) {
-
-													array_push( $this->songList, $currentSong );
-													
-													unset($currentSong);
-													
-												} // if
 											} // if
 										} // foreach
 									} // foreach
