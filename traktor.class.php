@@ -24,7 +24,7 @@
 --*/
 class Song {
 	
-	// title is cleaned up when required, while fullPath is raw to leave it available for filtering
+	// title is cleaned up when required, while fullPath is raw to leave it available for folder filtering
 	public $title;
 	public $fullPath;
 	
@@ -54,7 +54,8 @@ class Song {
 		$this->log = "\n";
 	}
 	
-	/*--
+	
+	/*--	isComplete()
 	
 		Returns true if the Song object has all requested values set.
 	
@@ -67,10 +68,9 @@ class Song {
 			return FALSE;
 		}
 	}
-		
-		
-		
-	/*--
+
+
+	/*--	hasValidPath
 
 		Returns true if the string parameter is found in the song path.
 		Useful if you want to collect data only about songs contained in a certain folder.
@@ -94,7 +94,7 @@ class Song {
 	}
 	
 	
-	/*--
+	/*--	setHideVersion
 	
 		Toggles the version hiding routine
 		
@@ -110,7 +110,7 @@ class Song {
 	}
 	
 	
-	/*--
+	/*--	setKey
 	
 		Sets title and fullPath reading the KEY attribute
 		
@@ -127,7 +127,7 @@ class Song {
 	}
 	
 	
-	/*--
+	/*--	setStartDate()
 	
 		Sets $day, $month, $year reading and decoding the STARTDATE attribute
 		
@@ -156,7 +156,7 @@ class Song {
 	}
 	
 	
-	/*--
+	/*--	setStartTime()
 	
 		Sets $hours, $minutes, $seconds reading and decoding the STARTTIME attribute
 		
@@ -183,7 +183,7 @@ class Song {
 	}
 	
 	
-	/*--
+	/*--	setDuration()
 		
 		Sets raw $duration reading the DURATION attribute.
 		
@@ -199,7 +199,7 @@ class Song {
 	}
 	
 	
-	/*--
+	/*--	getDuration()
 	
 		Returns the song duration in the format required (default float) defined by the parameter $format
 		Options:
@@ -230,8 +230,9 @@ class Song {
 			return NULL;
 		}
 	}
+
 	
-	/*--
+	/*--	setPlayedPublic()
 	
 		Sets the boolean $playedPublic to true.
 		This attribute appeared from version 2 of Traktor.
@@ -250,7 +251,7 @@ class Song {
 	}
 	
 	
-	/*--
+	/*--	getDate()
 	
 		Returns the song date/time in different formats, required setting the parameter $format (default "sql")
 		
@@ -308,7 +309,7 @@ class Song {
 	}
 	
 	
-	/*--
+	/*--	cleanTitle()
 		
 		If you set $hideVersion to TRUE, it cuts out the text in parentheses, in order to hide the version / remix 
 		(useful if you play a lot of bootlegs or private edits and you don't want to be bugged about it or you don't want to disclose these infos. )
@@ -351,6 +352,12 @@ class Traktor {
 		$log = "";
 	}
 	
+	
+	/*--	setHistoryPath()
+	
+		Sets the path to the History folder.
+	
+	--*/
 	public function setHistoryPath( $path = "./" ) {
 		$this->log .= "setHistoryPath('{$path}' )\n";
 		if( isset( $path ) ) {
@@ -363,12 +370,23 @@ class Traktor {
 		}
 	}
 	
+	
+	/*--	getHistoryPath()
+	
+		Returns the path to the History folder
+	
+	--*/
 	public function getHistoryPath() {
 		$this->log .= "getHistoryPath()\n";
 		return $this->historyPath;
 	}
 	
 	
+	/*--	setDirectoryFilter
+	
+		Sets the global directory filter that will be used by Song::hasValidPath()
+	
+	--*/
 	public function setDirectoryFilter( $filter = "" ) {
 		$this->log .= "setDirectoryFilter('{$filter}')\n";
 		if( isset( $filter ) ) {
@@ -381,7 +399,7 @@ class Traktor {
 	}
 	
 
-	/*--
+	/*--	scanPlaylist()
 		
 		Scans the current playlist and saves data in an array of Song objects.
 	
@@ -478,7 +496,8 @@ class Traktor {
 		}
 	}
 	
-	/*--
+	
+	/*--	scanDir()
 	
 		Scans a directory and saves all data in the globalSongList object array
 		
@@ -496,7 +515,8 @@ class Traktor {
 		return TRUE;
 	}
 	
-	/*--
+	
+	/*--	getGlobalSongList()
 	
 		Get the full array of Song objects
 		
@@ -511,7 +531,7 @@ class Traktor {
 	}
 	
 	
-	/*--
+	/*--	getLog()
 		
 		Returns the debug log
 	
