@@ -53,8 +53,8 @@ class Song {
 		$this->fullPath = "";
 		$this->log = "\n";
 	}
-	
-	
+
+
 	/*--	isComplete()
 	
 		Returns true if the Song object has all requested values set.
@@ -70,7 +70,7 @@ class Song {
 	}
 
 
-	/*--	hasValidPath
+	/*--	hasValidPath()
 
 		Returns true if the string parameter is found in the song path.
 		Useful if you want to collect data only about songs contained in a certain folder.
@@ -81,7 +81,7 @@ class Song {
 	--*/	
 	public function hasValidPath( $string = "" ) {
 		$this->log .= "hasValidPath('{$string}')\n";
-		if( isset( $string ) && !is_null( $string ) )  {
+		if( isset( $string ) && !is_null( $string ) && $string != "" )  {
 			if( strrpos ( $this->fullPath, $string, FALSE ) > 0 ) {
 				return TRUE;
 			} else {
@@ -92,8 +92,43 @@ class Song {
 			return TRUE;
 		}
 	}
+
+
+	/*-- hasBeenPlayed()
 	
+		Returns TRUE if the song has been played. 
+		Valid since Traktor 2 because before the attribute PLAYEDPUBLIC wasn't available.
+		If the parameter is absent, it returns TRUE, returns FALSE only when the parameter is 0.
+		
+	--*/
+	public function hasBeenPlayed() {
+		$this->log .= "hasBeenPlayed()\n";
+		switch( $this->playedPublic ) {
+			
+			case "0":
+				//$this->log .= "\tFALSE.('{$this->playedPublic}') -- 0\n";
+				return FALSE;
+			break;
+			
+			case "1":
+				//$this->log .= "\tTRUE. ('{$this->playedPublic}') -- 1\n";
+				return TRUE;
+			break;
+			
+			case NULL:
+				//$this->log .= "\tTRUE.('{$this->playedPublic}') --null\n";
+				return TRUE;
+			break;
+			
+			default:
+				//$this->log .= "\tTRUE. ('{$this->playedPublic}') -- default\n";
+				return TRUE;
+			break;
 	
+		} // switch
+	}
+
+
 	/*--	setHideVersion
 	
 		Toggles the version hiding routine
@@ -108,8 +143,8 @@ class Song {
 			return FALSE;
 		}
 	}
-	
-	
+
+
 	/*--	setKey
 	
 		Sets title and fullPath reading the KEY attribute
@@ -125,8 +160,8 @@ class Song {
 			return FALSE;
 		}
 	}
-	
-	
+
+
 	/*--	setStartDate()
 	
 		Sets $day, $month, $year reading and decoding the STARTDATE attribute
@@ -154,8 +189,8 @@ class Song {
 			return FALSE;
 		}
 	}
-	
-	
+
+
 	/*--	setStartTime()
 	
 		Sets $hours, $minutes, $seconds reading and decoding the STARTTIME attribute
@@ -164,7 +199,7 @@ class Song {
 	public function setStartTime( $startTime = "" ) {
 		$this->log .= "setStartTime('{$startTime}')\n";
 		if( isset( $startTime ) && !is_null( $startTime ) && (int)$startTime > 0 ) {
-			$this->log .= "\tStartTime is valid.\n";
+			//$this->log .= "\tStartTime is valid.\n";
 			
 			$this->hours = (int)$startTime / 3600 % 24;
 			$this->minutes = (int)$startTime / 60 % 60;
@@ -172,7 +207,7 @@ class Song {
 		
 			return TRUE;
 		} else {
-			$this->log .= "\tStartTime is not valid.\n";
+			//$this->log .= "\tStartTime is not valid.\n";
 		
 			$this->hours = NULL;
 			$this->minutes = NULL;
@@ -181,8 +216,8 @@ class Song {
 			return FALSE;
 		}
 	}
-	
-	
+
+
 	/*--	setDuration()
 		
 		Sets raw $duration reading the DURATION attribute.
@@ -197,41 +232,8 @@ class Song {
 			return FALSE;
 		}
 	}
-	
-	
-	/*--	getDuration()
-	
-		Returns the song duration in the format required (default float) defined by the parameter $format
-		Options:
-			int
-			float (default)
-			time  minutes:seconds
-	
-	--*/
-	public function getDuration( $format = "float" ) {
-		$this->log .= "getDuration('{$format}')\n";
-		if( isset( $format ) && !is_null( $format ) && isset( $this->duration) && !is_null( $this->duration ) ) {
-			switch( $format ) {
-				case "int":
-					return (int)ceil( $this->duration );
-				break;
-				
-				case "time":
-					return sprintf("%d:%02d", (int)floor( $this->duration / 60 ), ((int)$this->duration)%60);
-				break;
-				
-				case "float":
-				default:
-					return (float)$this->duration;
-				break;
-			} // switch
-		} else {
-			$this->log .= "\tFormat not valid: '{$format}'\n";
-			return NULL;
-		}
-	}
 
-	
+
 	/*--	setPlayedPublic()
 	
 		Sets the boolean $playedPublic to true.
@@ -240,17 +242,12 @@ class Song {
 	--*/
 	public function setPlayedPublic( $bool ) {
 		$this->log .= "setPlayedPublic('{$bool}')\n";
-		if( isset( $bool ) && !is_null( $bool ) ) {
-		
-			$this->playedPublic = (bool)$bool;
-			
-			return TRUE;
-		} else {
-			return FALSE;
-		}
+		// tried typecasting $bool to (bool) but when the value is '0' it returns TRUE instead of FALSE.
+		$this->playedPublic = $bool;
+		return TRUE;
 	}
-	
-	
+
+
 	/*--	getDate()
 	
 		Returns the song date/time in different formats, required setting the parameter $format (default "sql")
@@ -307,8 +304,41 @@ class Song {
 			} // switch
 		}
 	}
+
+
+	/*--	getDuration()
 	
+		Returns the song duration in the format required (default float) defined by the parameter $format
+		Options:
+			int
+			float (default)
+			time  minutes:seconds
 	
+	--*/
+	public function getDuration( $format = "float" ) {
+		$this->log .= "getDuration('{$format}')\n";
+		if( isset( $format ) && !is_null( $format ) && isset( $this->duration) && !is_null( $this->duration ) ) {
+			switch( $format ) {
+				case "int":
+					return (int)ceil( $this->duration );
+				break;
+				
+				case "time":
+					return sprintf("%d:%02d", (int)floor( $this->duration / 60 ), ((int)$this->duration)%60);
+				break;
+				
+				case "float":
+				default:
+					return (float)$this->duration;
+				break;
+			} // switch
+		} else {
+			$this->log .= "\tFormat not valid: '{$format}'\n";
+			return NULL;
+		}
+	}
+
+
 	/*--	cleanTitle()
 		
 		If you set $hideVersion to TRUE, it cuts out the text in parentheses, in order to hide the version / remix 
@@ -330,13 +360,13 @@ class Song {
 	}
 }
 
-/*--
+
+/*--	
 
 	We scan the history folder of Traktor in order to take out all songs we're interested to chart, and build up an array of Song objects.
 	This array is used then to process the data and build the chart.
 
 --*/
-
 class Traktor {
 
 	private $historyPath; // string, this points to Traktor's History folder
@@ -344,15 +374,15 @@ class Traktor {
 	private $globalSongList; // array that contains a series of Song objects.
 	public $log; // string, debug log
 
-	
+
 	public function __construct() {
 		$historyPath = "./";
 		$directoryFilter = "";
 		$globalSongList = array();
 		$log = "";
 	}
-	
-	
+
+
 	/*--	setHistoryPath()
 	
 		Sets the path to the History folder.
@@ -369,8 +399,8 @@ class Traktor {
 			return FALSE;
 		}
 	}
-	
-	
+
+
 	/*--	getHistoryPath()
 	
 		Returns the path to the History folder
@@ -380,8 +410,8 @@ class Traktor {
 		$this->log .= "getHistoryPath()\n";
 		return $this->historyPath;
 	}
-	
-	
+
+
 	/*--	setDirectoryFilter
 	
 		Sets the global directory filter that will be used by Song::hasValidPath()
@@ -397,7 +427,7 @@ class Traktor {
 			return FALSE;
 		}
 	}
-	
+
 
 	/*--	scanPlaylist()
 		
@@ -431,7 +461,7 @@ class Traktor {
 										
 										
 										/*-- we save the data collected until now in the Song object. --*/
-										if( isset( $currentSong ) && is_object( $currentSong ) && $currentSong->isComplete() && $currentSong->hasValidPath( $this->directoryFilter ) ) {
+										if( isset( $currentSong ) && is_object( $currentSong ) && $currentSong->isComplete() && $currentSong->hasValidPath( $this->directoryFilter ) && $currentSong->hasBeenPlayed() ) {
 											$songList[] = $currentSong;
 											$this->log .= "\tSong SAVED:<em>\n";
 											$this->log .= $currentSong->log;
@@ -471,7 +501,7 @@ class Traktor {
 												
 												if( $name == "DURATION") {
 													$currentSong->setDuration( $value );
-													$this->log .= "\tSong duration: ".$currentSong->getDuration("time")."\n";
+													$this->log .= "\t\t\tSong duration: ".$currentSong->getDuration("time")."\n";
 												}
 												
 												if( $name == "PLAYEDPUBLIC") {
@@ -495,8 +525,8 @@ class Traktor {
 			return array();
 		}
 	}
-	
-	
+
+
 	/*--	scanDir()
 	
 		Scans a directory and saves all data in the globalSongList object array
@@ -514,8 +544,8 @@ class Traktor {
 		
 		return TRUE;
 	}
-	
-	
+
+
 	/*--	getGlobalSongList()
 	
 		Get the full array of Song objects
@@ -529,8 +559,8 @@ class Traktor {
 			return array();
 		}
 	}
-	
-	
+
+
 	/*--	getLog()
 		
 		Returns the debug log
